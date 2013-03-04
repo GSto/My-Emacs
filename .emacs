@@ -8,14 +8,9 @@
 ;;load PHP library
 (load-library "php-mode")
 (load-library "coffee-mode")
-(load-library "scss-mode")
-
-(autoload 'markdown-mode "markdown-mode.el" "Major mode for editing Markdown files" t)
- (setq auto-mode-alist (cons '("\\.markdown" . markdown-mode) auto-mode-alist))
+(load-library "ruby-mode")
 ;; disable loading of "default.el" at startup
 (setq inhibit-default-init t)
-
-
 
 ;; prevent auto saving and backup files
 (setq-default auto-save-mode nil)
@@ -69,12 +64,13 @@
 (global-set-key "\M-y" 'emacs-clipboard-yank)
 (global-set-key "\C-x w" 'replace-string)
 (global-set-key [f1] 'manual-entry)
-(global-set-key [f2] 'other-frame)
+(global-set-key [f2] 'grep)
 (global-set-key [f3] 'mark-whole-buffer)
 (global-set-key [f4] 'indent-region)
 (global-set-key [f5] 'split-window-horizontally)
 (global-set-key [f6] 'split-window-vertically)
 (global-set-key [f7] 'replace-string)
+(global-set-key [f8] 'html-to-php)
 (global-set-key [f12] 'save-buffer)
 
 (global-set-key [home] `beginning-of-buffer)
@@ -94,20 +90,15 @@
 (add-to-list 'auto-mode-alist '("\\.class\\'" . drupal-mode))
 (add-to-list 'auto-mode-alist '("\\.tmpl\\'" . smarty-mode))
 (add-to-list 'auto-mode-alist '("\\.tpl\\'" . smarty-mode))
-(add-to-list 'auto-mode-alist '("\\.xml\\'" . drupal-mode))
+(add-to-list 'auto-mode-alist '("\\.xml\\'" . html-mode))
 (add-to-list 'auto-mode-alist '("\\.js\\'" . js-mode))
-(add-to-list 'auto-mode-alist '("\\.json\\'" . js-mode))
+; Titanium Alloy stylesheets
+(add-to-list 'auto-mode-alist '("\\.tss\\'" . js-mode))
 (add-to-list 'auto-mode-alist '("\\.rb\\'" . ruby-mode))
-(add-to-list 'auto-mode-alist '("\\Gemfile\\'" . ruby-mode))
 (add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
 (add-to-list 'auto-mode-alist '("\\.coffee\\'" . coffee-mode))
-(add-to-list 'auto-mode-alist '("\\.scss\\'" . scss-mode))
-(add-to-list 'auto-mode-alist '("\\.sass\\'" . scss-mode))
-(add-to-list 'auto-mode-alist '("\\.groovy\\'" . java-mode))
-;;(require 'generic-x)
-(when (locate-library "javascript")
-  (autoload 'javascript-mode "javascript" nil t)
-  (add-to-list 'auto-mode-alist '("\\.js\\'" . js-mode)))
+(add-to-list 'auto-mode-alist '("\\.rb\\'" . ruby-mode))
+(add-to-list 'auto-mode-alist '("\\Gemfile\\'" . ruby-mode))
 
 ;; Set up indentation of php-mode
 ;;(defun my-php-indent ()
@@ -116,13 +107,6 @@
 ;;  (setq c-basic-offset 2)       ; basic offset 2 spaces
 ;;  (setq indent-tabs-mode t)) ; use spaces for indentation
 ;;(add-hook 'php-mode-hook 'my-php-indent)
-
-;; Force tabs to be 2 spaces
-(setq indent-tabs-mode t)
-(setq default-tab-width 2)
-(setq tab-width 2)
-(setq c-basic-offset 2) 
-
 
 (defun drupal-mode ()
   "Drupal php-mode."
@@ -162,6 +146,13 @@
 (put 'downcase-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
 
+;; Force tabs to be 2 spaces
+(setq indent-tabs-mode t)
+(setq default-tab-width 2)
+(setq tab-width 2)
+(setq c-basic-offset 2)
+(setq js-indent-level 2)
+
 ;;Replace all freakin' ^M chars in the current buffer
 (fset 'replace-ctrlms
    [escape ?< escape ?% ?\C-q ?\C-m return ?\C-q ?\C-j return ?!])
@@ -178,27 +169,3 @@
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
  )
-
-;;setup org-mode
-(require 'org-install)
-(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-(define-key global-map "\C-cl" 'org-store-link)
-(define-key global-map "\C-ca" 'org-agenda)
-(setq org-log-done t)
-
-(modify-frame-parameters (selected-frame) 
-  `((alpha . 50)))
-
-;;; turn on syntax highlighting
-(global-font-lock-mode 1)
-
-;;; use groovy-mode when file ends in .groovy or has #!/bin/groovy at start
-(autoload 'groovy-mode "groovy-mode" "Major mode for editing Groovy code." t)
-(add-to-list 'auto-mode-alist '("\.groovy$" . groovy-mode))
-(add-to-list 'interpreter-mode-alist '("groovy" . groovy-mode))
-
-;;; make Groovy mode electric by default.
-(add-hook 'groovy-mode-hook
-          '(lambda ()
-             (require 'groovy-electric)
-             (groovy-electric-mode)))
