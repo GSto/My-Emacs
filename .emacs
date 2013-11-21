@@ -4,11 +4,22 @@
 
 ;;append Emacs Load Path
 (setq load-path (cons "~/.emacs.d" load-path))
+(add-to-list 'load-path "~/.emacs.d/scala-mode")
 
-;;load PHP library
+;;load scala
+(require 'scala-mode)
+
+;;load libraries
 (load-library "php-mode")
 (load-library "coffee-mode")
-(load-library "ruby-mode")
+(load-library "markdown-mode")
+(load-library "groovy-mode")
+(load-library "web-mode")
+(load-library "scss-mode")
+
+;; Zen Coding
+(require 'zencoding-mode)
+(add-hook 'sgml-mode-hook 'zencoding-mode)
 ;; disable loading of "default.el" at startup
 (setq inhibit-default-init t)
 
@@ -17,7 +28,7 @@
 (setq-default make-backup-files nil)
 (setq backup-inhibited t)
 (setq auto-save-default nil)
-
+(setq scss-compile-at-save nil)
 
 ;; custom macros
 (fset 'html-to-php
@@ -92,13 +103,32 @@
 (add-to-list 'auto-mode-alist '("\\.tpl\\'" . smarty-mode))
 (add-to-list 'auto-mode-alist '("\\.xml\\'" . html-mode))
 (add-to-list 'auto-mode-alist '("\\.js\\'" . js-mode))
+(add-to-list 'auto-mode-alist '("\\.css\\'" . css-mode))
+(add-to-list 'auto-mode-alist '("\\.scss\\'" . scss-mode))
+(add-to-list 'auto-mode-alist '("\\.less\\'" . css-mode))
+
 ; Titanium Alloy stylesheets
 (add-to-list 'auto-mode-alist '("\\.tss\\'" . js-mode))
-(add-to-list 'auto-mode-alist '("\\.rb\\'" . ruby-mode))
+
 (add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
+
+; rails settings
 (add-to-list 'auto-mode-alist '("\\.coffee\\'" . coffee-mode))
 (add-to-list 'auto-mode-alist '("\\.rb\\'" . ruby-mode))
 (add-to-list 'auto-mode-alist '("\\Gemfile\\'" . ruby-mode))
+(add-to-list 'auto-mode-alist '("\\.rake\\'" . ruby-mode))
+(add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
+
+;markdown
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+
+;grails settings
+(add-to-list 'auto-mode-alist '("\\.gsp\\'" . html-mode))
+(add-to-list 'auto-mode-alist '("\\.groovy\\'" . groovy-mode))
+
+;scala settings
+(add-to-list 'auto-mode-alist '("\\.scala\\'" . scala-mode))
 
 ;; Set up indentation of php-mode
 ;;(defun my-php-indent ()
@@ -147,12 +177,14 @@
 (put 'upcase-region 'disabled nil)
 
 ;; Force tabs to be 2 spaces
-(setq indent-tabs-mode t)
+;;(setq indent-tabs-mode t)
+(setq indent-tabs-mode nil)
 (setq default-tab-width 2)
 (setq tab-width 2)
+(setq coffee-tab-width 2)
 (setq c-basic-offset 2)
 (setq js-indent-level 2)
-
+(setq js-indent-tabs-mode nil)
 ;;Replace all freakin' ^M chars in the current buffer
 (fset 'replace-ctrlms
    [escape ?< escape ?% ?\C-q ?\C-m return ?\C-q ?\C-j return ?!])
@@ -169,3 +201,19 @@
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
  )
+
+;;hide windows line breaks (^M) characters from file
+(defun remove-dos-eol ()
+  "Do not show ^M in files containing mixed UNIX and DOS line endings."
+  (interactive)
+  (setq buffer-display-table (make-display-table))
+  (aset buffer-display-table ?\^M []))
+
+;;format json function
+(defun json-format ()
+	(interactive)
+	(save-excursion
+		(shell-command-on-region (mark) (point) "python -m json.tool" (buffer-name) t)
+		)
+)
+	

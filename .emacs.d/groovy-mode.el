@@ -1,9 +1,12 @@
 ;;; groovy-mode.el --- Groovy mode derived mode
 
-;;  Author: Russel Winder <russel@russel.org.uk>
+;;  Author: Russel Winder <russel@winder.org.uk>
 ;;  Created: 2006-08-01
+;;  Version: 201305050920
 
-;;  Copyright (C) 2006,2009-10 Russel Winder
+;;;; NB Version number is date and time yyyymmddhhMM in GMT (aka UTC).
+
+;;  Copyright (C) 2006,2009-10,2012,2013  Russel Winder
 
 ;;  This program is free software; you can redistribute it and/or modify it under the terms of the GNU
 ;;  General Public License as published by the Free Software Foundation; either version 2 of the License, or
@@ -18,7 +21,7 @@
 
 ;;; Authors:
 ;;
-;;  Russel Winder <russel.winder@concertant.com>, 2006--
+;;  Russel Winder <russel@winder.org.uk>, 2006--
 ;;  Jim Morris <morris@wolfman.com>, 2009--
 
 ;;; Commentary:
@@ -28,15 +31,14 @@
 ;;  code may contain some code fragments from those sources that was cut-and-pasted then edited.  All other
 ;;  code was newly entered by the author.  Obviously changes have been made since then.
 ;;
-;; NB  This derived mode requires CC Mode 5.31 or later for the virtual semicolon code to work.
+;;  NB  This derived mode requires CC Mode 5.31 or later for the virtual semicolon code to work.
 ;;
 ;;  There appears to be a problem in CC Mode 5.31 such that csharp-mode and groovy-mode crash XEmacs 21.4 if
 ;;  the files are byte compiled.
 
 ;;; Bugs:
 ;;
-;;  Bug tracking is currently (2009-11-26) handled using the Groovy JIRA via the Emacs Mode component.
-;;  cf. http://jira.codehaus.org/browse/GROOVY/component/14245
+;;  Bug tracking is currently (2013-06-06) handled using the GitHub issue tracker at https://github.com/russel/Emacs-Groovy-Mode/issues
 
 ;;; Versions:
 ;;
@@ -138,61 +140,61 @@ since CC Mode treats every identifier as an expression."
   groovy `(
            ;; Primary.
            ,@(c-lang-const c-identifier-ops)
-             
+
              (postfix-if-paren "<" ">") ; Templates.
-             
+
              (prefix "super")
-             
+
              ;; Postfix.
              (left-assoc "." "*." "?." ".&" ".@")
-             
+
              (postfix "++" "--" "[" "]" "(" ")" "<:" ":>")
-             
+
              ;; Unary.
              (prefix "++" "--" "+" "-" "!" "~" "new" "(" ")")
-             
+
              ;; Multiplicative.
              (left-assoc "*" "/" "%")
-             
+
              ;; Additive.
              (left-assoc "+" "-")
-             
+
              ;; Shift.
              (left-assoc "<<" ">>" ">>>")
-             
+
              ;; Relational.
              (left-assoc "<" ">" "<=" ">=" "instanceof" "<=>")
-             
+
              ;; Matching.
              (left-assoc "=~" "==~" )
 
              ;; Equality.
              (left-assoc "==" "!=" )
-             
+
              ;; Bitwise and.
              (left-assoc "&")
-             
+
              ;; Bitwise exclusive or.
              (left-assoc "^")
-             
+
              ;; Bitwise or.
              (left-assoc "|")
-             
+
              ;; Logical and.
              (left-assoc "&&")
-             
+
              ;; Logical or.
              (left-assoc "||")
-             
+
              ;; Conditional.
              (right-assoc-sequence "?" ":")
-             
+
              ;; Assignment.
              (right-assoc ,@(c-lang-const c-assignment-operators))
-             
+
              ;; Exception.
              ;(prefix "throw") ; Java mode didn't have this but c++ mode does.  Humm...
-             
+
              ;; Sequence.
              (left-assoc ",")
 
@@ -206,7 +208,7 @@ since CC Mode treats every identifier as an expression."
                           "&" "|" "^" "~" "<<" ">>" ">>>"
                           "==" "!=" ">" "<" ">=" "<="
                           "<=>"
-                          "=~" "==~" 
+                          "=~" "==~"
                           "++" "--" "+=" "-=" "*=" "/=" "%="
                           "&=" "|=" "^=" "~=" "<<=" ">>=" ">>>="
                           "!" "&&" "||"))
@@ -273,7 +275,7 @@ since CC Mode treats every identifier as an expression."
     (goto-char pos)
 	(back-to-indentation)
 	(not
-	 (or 
+	 (or
 	  (and (looking-at "if") ; make sure nothing else on line
 		   (progn (forward-sexp 2)
 				  (groovy-ws-or-comment-to-eol-p (point))))
@@ -369,6 +371,8 @@ need for `java-font-lock-extra-types'.")
     (setq groovy-mode-syntax-table
 	  (funcall (c-lang-const c-make-mode-syntax-table groovy))))
 
+;(modify-syntax-entry ?: "_" groovy-mode-syntax-table)
+
 (defvar groovy-mode-abbrev-table nil
   "Abbreviation table used in groovy-mode buffers.")
 (c-define-abbrev-table 'groovy-mode-abbrev-table
@@ -399,9 +403,11 @@ need for `java-font-lock-extra-types'.")
 ;                (cons "Groovy" (c-lang-const c-mode-menu groovy)))
 
 ;;; Autoload mode trigger
-;(add-to-list 'auto-mode-alist '("\\.groovy" . groovy-mode))
+;;;###autoload
+(add-to-list 'auto-mode-alist '("\\.groovy$" . groovy-mode))
 
 ;; Custom variables
+;;;###autoload
 (defcustom groovy-mode-hook nil
   "*Hook called by `groovy-mode'."
   :type 'hook
@@ -413,11 +419,11 @@ need for `java-font-lock-extra-types'.")
 ;; if we are in a closure that has an argument eg ends with -> (excluding comment) then
 ;; change indent else lineup with previous one
 (defun groovy-mode-fix-closure-with-argument (langelem)
-  (save-excursion 
-	(back-to-indentation)	
+  (save-excursion
+	(back-to-indentation)
 	(c-backward-syntactic-ws)
 	(backward-char 2)
-	(if (looking-at "->")                                  ; if the line has a -> in it 
+	(if (looking-at "->")                                  ; if the line has a -> in it
 		(vector (+ (current-indentation) c-basic-offset))  ; then indent from base
 	  0)))
 
@@ -447,30 +453,72 @@ need for `java-font-lock-extra-types'.")
   "return t if we are in groovy mode else nil"
   (eq major-mode 'groovy-mode))
 
+(defun groovy-is-label (the-list)
+  (let ((ret nil))
+    (dolist (elt the-list)
+      (if (eq 'label (car elt))
+	  (setq ret t)))
+    ret))
+
+(defun groovy-backtrack-open-paren ()
+  (let ((counter 0))
+    (while (<= 0 counter)
+      (skip-chars-backward "^}]){[(")
+      (cond ((or (equal ?\] (preceding-char))
+		 (equal ?\) (preceding-char))
+		 (equal ?} (preceding-char)))
+	     (setq counter (1+ counter)))
+	    ((or (equal ?\[ (preceding-char))
+		 (equal ?\( (preceding-char))
+		 (equal ?{ (preceding-char)))
+	     (setq counter (1- counter))))
+      (backward-char 1))))
+
+(defun groovy-named-parameter-list-anchor-points ()
+  (save-excursion
+    (beginning-of-line)
+    (c-backward-syntactic-ws)
+    (if (equal ?, (preceding-char))
+	(let* ((second-anchor (progn (groovy-backtrack-open-paren)
+				     (point)))
+	       (first-anchor (progn (beginning-of-line)
+				    (c-forward-syntactic-ws)
+				    (point))))
+	  (cons first-anchor second-anchor))
+      nil)))
+
 ;; use defadvice to override the syntactic type if we have a
 ;; statement-cont, see if previous line has a virtual semicolon and if
 ;; so make it statement.
 (defadvice c-guess-basic-syntax (after c-guess-basic-syntax-groovy activate)
-  (when (is-groovy-mode)
-	(save-excursion
-	  (let* ((ankpos (progn 
-					   (beginning-of-line)
-					   (c-backward-syntactic-ws)
-					   (beginning-of-line)
-					   (c-forward-syntactic-ws)
-					   (point))) ; position to previous non-blank line
-			 (curelem (c-langelem-sym (car ad-return-value))))
-		(end-of-line)
-		(cond
-		 ((eq 'statement-cont curelem)
-		  (when (groovy-at-vsemi-p) ; if there is a virtual semi there then make it a statement
-			(setq ad-return-value `((statement ,ankpos)))))
-		 
-		 ((eq 'topmost-intro-cont curelem)
-		  (when (groovy-at-vsemi-p) ; if there is a virtual semi there then make it a top-most-intro
-			(setq ad-return-value `((topmost-intro ,ankpos)))))
-		
-		 )))))
+  (catch 'exit-early
+    (when (is-groovy-mode)
+      (if (groovy-is-label ad-return-value)
+	  (progn
+	    (let ((anchor-points (groovy-named-parameter-list-anchor-points)))
+	      (if anchor-points
+		  (setq ad-return-value `((arglist-cont-nonempty ,(car anchor-points) ,(cdr anchor-points))))
+      		(throw 'exit-early 1)))))
+
+      (save-excursion
+	(let* ((ankpos (progn
+			 (beginning-of-line)
+			 (c-backward-syntactic-ws)
+			 (beginning-of-line)
+			 (c-forward-syntactic-ws)
+			 (point))) ; position to previous non-blank line
+	       (curelem (c-langelem-sym (car ad-return-value))))
+	  (end-of-line)
+	  (cond
+	   ((eq 'statement-cont curelem)
+	    (when (groovy-at-vsemi-p) ; if there is a virtual semi there then make it a statement
+	      (setq ad-return-value `((statement ,ankpos)))))
+
+	   ((eq 'topmost-intro-cont curelem)
+	    (when (groovy-at-vsemi-p) ; if there is a virtual semi there then make it a top-most-intro
+	      (setq ad-return-value `((topmost-intro ,ankpos)))))
+
+	   ))))))
 
 ;; This disables bracelists, as most of the time in groovy they are closures
 ;; We need to check we are currently in groovy mode
@@ -513,7 +561,7 @@ need for `java-font-lock-extra-types'.")
    "[ \t\n\r]*"                                ; whitespace
 ;   "\\(throws\\([, \t\n\r]\\|[a-zA-Z0-9_$]\\)+\\)?{"
    "\\(throws[^{;]+\\)?"                       ; optional exceptions
-   "[;{]"                                      ; ending ';' (interfaces) or '{' 
+   "[;{]"                                      ; ending ';' (interfaces) or '{'
 										       ; TODO groovy interfaces don't need to end in ;
    )
   "Matches method names in groovy code, select match 2")
@@ -540,6 +588,7 @@ need for `java-font-lock-extra-types'.")
   "Imenu generic expression for Groovy mode.  See `imenu-generic-expression'.")
 
 ;;; The entry point into the mode
+;;;###autoload
 (defun groovy-mode ()
   "Major mode for editing Groovy code.
 
@@ -574,9 +623,12 @@ Key bindings:
   (c-set-offset 'arglist-cont 0)
   (c-set-offset 'arglist-cont-nonempty '(groovy-lineup-arglist))
   (c-set-offset 'arglist-intro '+)
+  (c-set-offset 'label '+)
 
   (c-update-modeline))
 
+;;;###autoload
+(add-to-list 'interpreter-mode-alist '("groovy" . groovy-mode))
 
 (provide 'groovy-mode)
 

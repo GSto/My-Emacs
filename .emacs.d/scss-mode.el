@@ -37,26 +37,27 @@
   :prefix "scss-"
   :group 'css)
 
-;;(defcustom scss-sass-command "sass"
-;;  "Command used to compile SCSS files, should be sass or the
-;;  complete path to your sass runnable example:
-;;  \"~/.gem/ruby/1.8/bin/sass\""
-;;  :group 'scss)
+(defcustom scss-sass-command "sass"
+  "Command used to compile SCSS files, should be sass or the
+  complete path to your sass runnable example:
+  \"~/.gem/ruby/1.8/bin/sass\""
+  :group 'scss)
 
+; change nil to t to activate
 (defcustom scss-compile-at-save nil
   "If not nil the SCSS buffers will be compiled after each save"
   :type 'boolean
   :group 'scss)
 
-;;(defcustom scss-sass-options '()
-;;  "Command line Options for sass executable, for example:
-;;'(\"--cache-location\" \"'/tmp/.sass-cache'\")"
-;;  :group 'scss)
+(defcustom scss-sass-options '()
+  "Command line Options for sass executable, for example:
+'(\"--cache-location\" \"'/tmp/.sass-cache'\")"
+  :group 'scss)
 
-;;(defcustom scss-output-directory nil
-;;  "Output directory for compiled files, for example:
-;;\"../css\""
-;;  :group 'scss)
+(defcustom scss-output-directory nil
+  "Output directory for compiled files, for example:
+\"../css\""
+  :group 'scss)
 
 (defcustom scss-compile-error-regex '("\\(Syntax error:\s*.*\\)\n\s*on line\s*\\([0-9]+\\) of \\([^, \n]+\\)" 3 2 nil nil 1)
   "Regex for finding line number file and error message in
